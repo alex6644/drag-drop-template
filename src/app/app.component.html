@@ -1,0 +1,5 @@
+<div style="width: 100%;display: grid; grid-template-columns: 20% 20% 20% 20% 20%" cdkDropList class="phone-list"
+     cdkDropListOrientation="horizontal"
+     (cdkDropListDropped)="drop($event)">
+  <div class="phone-container" *ngFor="let phone of sortedPhones" cdkDrag>{{ phone.name }}</div>
+</div>
