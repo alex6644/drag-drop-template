@@ -1,5 +1,37 @@
-<div style="width: 100%;display: grid; grid-template-columns: 20% 20% 20% 20% 20%" cdkDropList class="phone-list"
-     cdkDropListOrientation="horizontal"
-     (cdkDropListDropped)="drop($event)">
-  <div class="phone-container" *ngFor="let phone of sortedPhones" cdkDrag>{{ phone.name }}</div>
+<!--<div style="width: 100%;display: grid;grid-template-columns: 33.333% 33.333% 33.333%">
+  <div cdkDropList class="phone-list" (cdkDropListDropped)="dropBrand($event)">
+    <div (click)="getTypesForBrand(brand)" class="phone-container" *ngFor="let brand of getAllBrands()"
+         cdkDrag>{{ brand.brand }}
+    </div>
+  </div>
+  <div cdkDropList class="phone-list" (cdkDropListDropped)="dropType($event)">
+    <div (click)="getPhonesForTypeAndBrand(type,selectedBrand)" class="phone-container" *ngFor="let type of selectedTypes" cdkDrag>{{ type.type }}</div>
+  </div>
+  <div cdkDropList class="phone-list" (cdkDropListDropped)="dropPhone($event)">
+    <div class="phone-container" *ngFor="let phone of selectedPhones" cdkDrag>{{ phone.name }}</div>
+  </div>
+</div>-->
+
+<div style="width: 100%;display: grid;grid-template-columns: 33.333% 33.333% 33.333%">
+  <div cdkDropList class="phone-list" (cdkDropListDropped)="dropBrand($event)">
+    <div (click)="getTypesForBrand(brand)" class="phone-container" *ngFor="let brand of organizedDataArray"
+         cdkDrag>{{ brand.brand }}
+    </div>
+  </div>
+  <div cdkDropList class="phone-list" (cdkDropListDropped)="dropType($event)">
+    <div (click)="getPhonesForTypeAndBrand(type,selectedBrand)" class="phone-container" *ngFor="let type of getTypesForSelectedBrand()" cdkDrag>{{ type.type }}</div>
+  </div>
+  <div cdkDropList class="phone-list" (cdkDropListDropped)="dropPhone($event)">
+    <div class="phone-container" *ngFor="let phone of getPhonesForSelectedTypeAndBrand()" cdkDrag>{{ phone.name }}</div>
+  </div>
 </div>
+
+<button (click)="organizedDataToOrderMap(organizedDataArray)">Organize Data</button>
+
+
+<div style="width: 100%;display: grid;grid-template-columns: 33.333% 33.333% 33.333%">
+  <div cdkDropList class="phone-list" (cdkDropListDropped)="dropPhone($event)">
+    <div class="phone-container" *ngFor="let phone of sortPhonesByOrder()" cdkDrag>{{ phone.name }}</div>
+  </div>
+</div>
+

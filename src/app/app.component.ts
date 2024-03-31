@@ -1,50 +1,162 @@
-import {Component, OnInit} from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
-import {Phone, PhoneService} from "../phone.service";
-import {NgForOf, NgIf} from "@angular/common";
-
+import {
+  Phone,
+  PhoneService,
+   ProductBrand,
+  ProductBrandWrapper,
+  ProductType,
+} from "../phone.service";
+import {NgForOf} from "@angular/common";
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, NgIf, CdkDrag, NgForOf, CdkDropList],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  standalone: true,
+  imports: [
+    CdkDropList,
+    NgForOf,
+    CdkDrag
+  ],
+  styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit{
+export class AppComponent implements OnInit {
   title = 'drag-drop-template';
-
-  allPhones:Phone[] = [];
-  phoneOrder:Map<number,number> = new Map();
 
   sortedPhones: Phone[] = [];
 
-  constructor(private phoneService:PhoneService) {
-  }
+  staticPhones: Phone[] = [];
+
+  selectedTypes: ProductType[] = [];
+  selectedPhones: Phone[] = [];
+  selectedBrand: ProductBrand =  {brand: 'Apple', types: []};
+
+  organizedDataArray: ProductBrand[] = [];
+
+
+  constructor(private phoneService: PhoneService) { }
 
   ngOnInit(): void {
-    this.loadPhoneOrder();
     this.loadPhones();
-    this.sortPhones();
+    this.staticPhones = this.phoneService.getAllPhones();
+    this.organizedDataArray = this.organizeData();
+    console.log(this.organizedDataToOrderMap(this.organizeData()));
+  }
+
+
+  public organizeData(): ProductBrand[] {
+    let brands: ProductBrand[] = [];
+    this.staticPhones.forEach(phone => {
+      let brand = brands.find(b => b.brand === phone.brand.brand);
+      if (!brand) {
+        brand = { brand: phone.brand.brand, types: [] };
+        brands.push(brand);
+      }
+      let type = brand.types.find(t => t.type === phone.type.type);
+      if (!type) {
+        type = { type: phone.type.type, phones: [] };
+        brand.types.push(type);
+      }
+      type.phones.push(phone);
+    });
+    return brands;
+  }
+
+  public organizedDataToOrderMap(organizedData: ProductBrand[]): Map<number,number> {
+    let orderMap = new Map<number, number>();
+    let order = 0;
+    organizedData.forEach(brand => {
+      brand.types.forEach(type => {
+        type.phones.forEach(phone => {
+          orderMap.set(phone.id, order++);
+        });
+      });
+    });
+    console.log(orderMap);
+    return orderMap;
   }
 
   loadPhones() {
-    this.allPhones = this.phoneService.getAllPhones();
+    this.sortedPhones = this.phoneService.getAllPhones();
   }
 
-  loadPhoneOrder() {
-    this.phoneOrder = this.phoneService.getPhoneOrder();
+  getAllBrands(): ProductBrand[] {
+    return this.staticPhones.map(phone => phone.brand).filter((brand, index, self) =>
+      index === self.findIndex((t) => (
+        t.brand === brand.brand
+      ))
+    );
   }
 
-  sortPhones(): void {
-    this.sortedPhones = this.allPhones.sort((a, b) => this.phoneOrder.get(a.id)! - this.phoneOrder.get(b.id)!);
+  getTypesForBrand(brand: ProductBrand):void {
+    this.selectedTypes = [];
+    this.selectedPhones = [];
+    this.selectedBrand = brand;
+    this.selectedTypes = this.staticPhones
+      .filter(phone => phone.brand.brand === brand.brand)
+      .map(phone => phone.type);
   }
 
-  drop(event: CdkDragDrop<Phone[]>): void {
-    moveItemInArray(this.sortedPhones, event.previousIndex, event.currentIndex);
-    this.sortedPhones.forEach((phone, index) => {
-      this.phoneOrder.set(phone.id, index);
+
+  getPhonesForTypeAndBrand(type: ProductType, brand: ProductBrand):void {
+    this.selectedPhones = [];
+    this.selectedPhones = this.staticPhones
+      .filter(phone => phone.type.type === type.type && phone.brand.brand === brand.brand);
+  }
+
+  dropBrand(event: CdkDragDrop<ProductBrand[]>): void {
+    moveItemInArray(this.organizedDataArray, event.previousIndex, event.currentIndex);
+  }
+
+  dropType(event: CdkDragDrop<ProductType[]>): void {
+    if (this.selectedBrand) {
+      moveItemInArray(this.selectedBrand.types, event.previousIndex, event.currentIndex);
+    }
+  }
+
+  dropPhone(event: CdkDragDrop<Phone[]>): void {
+    if (this.selectedBrand && this.selectedTypes) {
+      let type = this.selectedBrand.types.find(t => t.type === this.selectedTypes[0].type);
+      if (type) {
+        moveItemInArray(type.phones, event.previousIndex, event.currentIndex);
+      }
+    }
+  }
+
+  getTypesForSelectedBrand(): ProductType[] {
+    if (this.selectedBrand) {
+      return this.selectedBrand.types;
+    }
+    return [];
+  }
+
+  getPhonesForSelectedTypeAndBrand(): Phone[] {
+    if (this.selectedBrand && this.selectedTypes) {
+      let type = this.selectedBrand.types.find(t => t.type === this.selectedTypes[0].type);
+      if (type) {
+        return type.phones;
+      }
+    }
+    return [];
+  }
+
+  getAllPhonesFromOrganizedData(): Phone[] {
+    let allPhones: Phone[] = [];
+    this.organizedDataArray.forEach(brand => {
+      brand.types.forEach(type => {
+        type.phones.forEach(phone => {
+          allPhones.push(phone);
+        });
+      });
     });
+    return allPhones;
   }
+
+  sortPhonesByOrder(): Phone[] {
+    let allPhones = this.getAllPhonesFromOrganizedData();
+    let orderMap = this.organizedDataToOrderMap(this.organizedDataArray);
+    allPhones.sort((a, b) => (orderMap.get(a.id) || 0) - (orderMap.get(b.id) || 0));
+    return allPhones;
+  }
+
 }
