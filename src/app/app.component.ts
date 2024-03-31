@@ -98,11 +98,11 @@ export class AppComponent implements OnInit {
   }
 
 
-  getPhonesForTypeAndBrand(type: ProductType, brand: ProductBrand):void {
-    this.selectedPhones = [];
-    this.selectedPhones = this.staticPhones
-      .filter(phone => phone.type.type === type.type && phone.brand.brand === brand.brand);
-  }
+  getPhonesForTypeAndBrand(type: ProductType, brand: ProductBrand): void {
+    this.selectedTypes = [type];
+  this.selectedPhones = this.staticPhones
+    .filter(phone => phone.type.type === type.type && phone.brand.brand === brand.brand);
+}
 
   dropBrand(event: CdkDragDrop<ProductBrand[]>): void {
     moveItemInArray(this.organizedDataArray, event.previousIndex, event.currentIndex);

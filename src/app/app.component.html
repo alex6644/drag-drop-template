@@ -16,7 +16,7 @@
   <div cdkDropList class="phone-list" (cdkDropListDropped)="dropBrand($event)">
     <div (click)="getTypesForBrand(brand)" class="phone-container" *ngFor="let brand of organizedDataArray"
          cdkDrag>{{ brand.brand }}
-    </div>
+    </div>x
   </div>
   <div cdkDropList class="phone-list" (cdkDropListDropped)="dropType($event)">
     <div (click)="getPhonesForTypeAndBrand(type,selectedBrand)" class="phone-container" *ngFor="let type of getTypesForSelectedBrand()" cdkDrag>{{ type.type }}</div>
